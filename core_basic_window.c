@@ -1,43 +1,36 @@
 #include "raylib.h"
+#include <time.h> //tempo das rodadas
+#include <stdlib.h>  //random ta aqui
+// caminho pro git hub C:\Users\Eric Felix\Projeto2PI1
 
-//------------------------------------------------------------------------------------
-// Program main entry point
-//------------------------------------------------------------------------------------
 int main(){
-    // Initialization
-    //--------------------------------------------------------------------------------------
-    const int screenWidth = 800;
-    const int screenHeight = 450;
+    
+    const int coordenadaX = 800;
+    const int coordenadaY = 450;
 
-    InitWindow(screenWidth, screenHeight, "raylib [core] example - basic window");
+    InitWindow(coordenadaX, coordenadaY, "Jogo dos quadrado");
+    Vector2 ballPosition = {(float)coordenadaX/2, (float)coordenadaY/2};
 
-    SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
-    //--------------------------------------------------------------------------------------
+    SetTargetFPS(60);              
+    
 
-    // Main game loop
-    while (!WindowShouldClose())    // Detect window close button or ESC key
+    
+    while (!WindowShouldClose())   
     {
-        // Update
-        //----------------------------------------------------------------------------------
-        // TODO: Update your variables here
-        //----------------------------------------------------------------------------------
-
-        // Draw
-        //----------------------------------------------------------------------------------
         BeginDrawing();
-
+            
             ClearBackground(RAYWHITE);
 
-            DrawText("Olá, Mundo!", 190, 200, 20, LIGHTGRAY);
+            DrawText("Olá, Mundo!", 190, 200, 20, DARKGRAY);
+            DrawCircleV(ballPosition, 50, MAROON);
 
         EndDrawing();
-        //----------------------------------------------------------------------------------
+        
     }
 
-    // De-Initialization
-    //--------------------------------------------------------------------------------------
-    CloseWindow();        // Close window and OpenGL context
-    //--------------------------------------------------------------------------------------
+    
+    CloseWindow();        
+    
 
     return 0;
 }
