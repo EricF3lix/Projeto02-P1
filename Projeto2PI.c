@@ -1,5 +1,7 @@
 #include "raylib.h"
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 //C:\Users\Eric Felix\Projeto2PI1
 
 
@@ -8,6 +10,71 @@ typedef struct usuario {
     int vida;
     int pontuacao;
 } Usuario;
+
+void salvaArquivo(Usuario rank[]);
+
+void ordenaTop10(Usuario todosUsuarios[]){
+    for(int i = 0; i < 11; i++){
+        for(int j = i + 1; j < 12; j++){
+            if(todosUsuarios[j].pontuacao > todosUsuarios[i].pontuacao){
+                Usuario temp = todosUsuarios[i];
+                todosUsuarios[i] = todosUsuarios[j];
+                todosUsuarios[j] = temp;
+            }
+        }
+    }
+}
+
+
+void comparaComUsuarios(Usuario jogadores[], Usuario rank[]){
+    Usuario todosUsuarios[12];
+    
+    for(int i = 0; i < 10; i++){
+        todosUsuarios[i] = rank[i];
+    }
+
+    
+    todosUsuarios[10] = jogadores[0];
+    todosUsuarios[11] = jogadores[1];
+
+   
+    ordenaTop10(todosUsuarios);
+
+   
+    for(int i = 0; i < 10; i++){
+       rank[i] = todosUsuarios[i];
+    }
+    salvaArquivo(rank);
+}
+
+void carregarArquivo(Usuario rank[]){
+    FILE *arquivo = fopen("PlacarLideranca.txt", "r");
+    if(arquivo){
+        char titulo[150];
+        fgets(titulo, sizeof(titulo), arquivo);
+        int contaPosicao = 0;
+        while(contaPosicao < 10){
+            if(fscanf(arquivo, "%s %d", rank[contaPosicao].nome, &rank[contaPosicao].pontuacao)!=2){
+                break;
+            }
+            contaPosicao++;
+            
+        }
+        fclose(arquivo);
+    }
+}
+
+void salvaArquivo(Usuario rank[]){
+    FILE *arquivo = fopen("PlacarLideranca.txt", "w");
+    if(arquivo){
+        fprintf(arquivo, "RANK TOP 10 DO DEU A LOUCA NO QUADRADO!\n");
+        for(int i = 0 ; i < 10 ; i++){
+            fprintf(arquivo, "%s %d\n", rank[i].nome, rank[i].pontuacao);
+        }
+        fclose(arquivo);
+        
+    }
+}
 
 void menuJogador(Usuario jogadores[], int quantidadePlayer) {
     
@@ -248,10 +315,11 @@ int main(){
     InitAudioDevice();
     InitWindow(larguraTela, alturaTela, "Projeto de programação");
     
-    Music musica = LoadMusicStream("musicaMenu.mp3");
+    Music musica = LoadMusicStream("teste.mp3");
     PlayMusicStream(musica);
    
-    
+    Usuario *rank = malloc(10*sizeof(Usuario));
+    carregarArquivo(rank);
     while(escolha!=0 && !WindowShouldClose()){
         escolha = menu(musica);
         
@@ -269,7 +337,12 @@ int main(){
                 Usuario jogadores[2];
                 quantidadePlayer = menuMultijogador(musica);
                 menuJogador(jogadores, quantidadePlayer);
+                //vai ter o jogo aq e tal
+                comparaComUsuarios(jogadores, rank);
                 break;
+            
+            case 2:
+               
                 
                 
         }
