@@ -6,6 +6,6 @@ Pedro 160
 Ana 140
 Carlos 130
 Luisa 120
-Bruno 90
-Rafa 80
-Gustavo 50
+Rodrigo 100
+jose 80
+lucas 40

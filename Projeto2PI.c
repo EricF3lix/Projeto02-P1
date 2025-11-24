@@ -12,6 +12,47 @@ typedef struct usuario {
 } Usuario;
 
 void salvaArquivo(Usuario rank[]);
+//lembrar de colocar as assinaturas das funções pra nn dar bronca
+
+void desenhaPlacar(Usuario rank[], Music vitoria){
+    Rectangle botaoVoltar = {0, 0, 60, 30};
+    int parar = 1;
+    while(parar!=0 && !WindowShouldClose()){
+        UpdateMusicStream(vitoria);
+        Vector2 mouse = GetMousePosition();
+        bool voltar = CheckCollisionPointRec(mouse, botaoVoltar);
+        BeginDrawing();
+            
+            ClearBackground(RAYWHITE);
+            DrawText("RANK TOP 10 DO DEU A LOUCA NO QUADRADO!", 150, 20, 20, MAROON);
+            int eixoY = 50;
+            char jogador[100];
+            for(int i = 0 ; i < 10 ; i++){
+                snprintf(jogador, sizeof(jogador), "%dº - %s %d", i+1, rank[i].nome, rank[i].pontuacao);
+             
+                if(i<=2){  
+                    DrawText(jogador, 300, eixoY, 20, MAROON);
+                } else {
+                    DrawText(jogador, 300, eixoY, 20, BLACK);
+                    
+                }
+                eixoY+=35;
+            }
+            
+            DrawRectangleRec(botaoVoltar, voltar ? LIGHTGRAY : GRAY);
+            DrawText("VOLTAR", botaoVoltar.x+5, botaoVoltar.y+10, 10, BLACK);
+        EndDrawing();
+        if (voltar && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
+            parar = 0;
+            
+        }
+    }
+}
+
+
+
+
+
 
 void ordenaTop10(Usuario todosUsuarios[]){
     for(int i = 0; i < 11; i++){
@@ -76,7 +117,69 @@ void salvaArquivo(Usuario rank[]){
     }
 }
 
-void menuJogador(Usuario jogadores[], int quantidadePlayer) {
+
+void menuComoJogar(int quantidadePlayer, Music musica) {
+    int enter = 1;
+
+    while (enter != 0) {
+        UpdateMusicStream(musica);
+
+        BeginDrawing();
+        ClearBackground(RAYWHITE);
+
+        // Título
+        DrawText("COMO JOGAR", 200, 20, 30, MAROON);
+
+        if (quantidadePlayer == 1) {
+
+            DrawText("Modo selecionado: SINGLE PLAYER", 100, 70, 25, BLACK);
+
+            DrawText("Controles:", 100, 120, 23, MAROON);
+
+            
+            DrawText("UP", 100, 160, 20, RED);
+            DrawText(" - Aumenta a quantidade de quadrados", 140, 160, 20, BLACK);
+
+           
+            DrawText("DOWN", 100, 190, 20, RED);
+            DrawText(" - Diminui a quantidade de quadrados", 160, 190, 20, BLACK);
+        }
+        else {
+
+            DrawText("Modo selecionado: DUAL PLAYER", 100, 70, 25, BLACK);
+
+
+            DrawText("Jogador 1", 80, 130, 23, MAROON);
+
+            DrawText("UP", 80, 170, 20, RED);
+            DrawText(" - Aumenta os quadrados", 120, 170, 20, BLACK);
+
+            DrawText("DOWN", 80, 200, 20, RED);
+            DrawText(" - Diminui os quadrados", 150, 200, 20, BLACK);
+
+           
+            DrawText("Jogador 2", 420, 130, 23, MAROON);
+
+            DrawText("W", 420, 170, 20, RED);
+            DrawText(" - Aumenta os quadrados", 460, 170, 20, BLACK);
+
+            DrawText("S", 420, 200, 20, RED);
+            DrawText(" - Diminui os quadrados", 460, 200, 20, BLACK);
+        }
+
+        DrawText("Pressione ENTER para continuar", 180, 380, 22, DARKGRAY);
+
+        EndDrawing();
+
+        if (IsKeyPressed(KEY_ENTER)) {
+            enter = 0;
+        }
+    }
+}
+
+
+
+void menuJogador(Usuario jogadores[], int quantidadePlayer, Music musica) {
     
     for (int i = 0; i < quantidadePlayer; i++) {
         jogadores[i].vida = 5;
@@ -94,6 +197,7 @@ void menuJogador(Usuario jogadores[], int quantidadePlayer) {
     int len2 = 0;
 
     while (!WindowShouldClose()) {
+        UpdateMusicStream(musica);
 
         Vector2 mouse = GetMousePosition();
 
@@ -315,10 +419,15 @@ int main(){
     InitAudioDevice();
     InitWindow(larguraTela, alturaTela, "Projeto de programação");
     
-    Music musica = LoadMusicStream("teste.mp3");
+    Music musica = LoadMusicStream("musicaMenu.mp3");
+    Music derrota = LoadMusicStream("derrota.mp3");
+    Music vitoria = LoadMusicStream("musicaVitoria.mp3");
     PlayMusicStream(musica);
+    PlayMusicStream(derrota);
+    PlayMusicStream(vitoria);
    
     Usuario *rank = malloc(10*sizeof(Usuario));
+    Usuario *jogadores = malloc(2*sizeof(Usuario));
     carregarArquivo(rank);
     while(escolha!=0 && !WindowShouldClose()){
         escolha = menu(musica);
@@ -326,6 +435,7 @@ int main(){
         switch(escolha){
             case 0:
                 while(!WindowShouldClose()){
+                    UpdateMusicStream(derrota);
                     BeginDrawing();
                         ClearBackground(BLACK);
                         DrawText("Arregou! FIM DE JOGO!", 40, 180, 60, MAROON);
@@ -334,19 +444,28 @@ int main(){
                 break;
             
             case 1:
-                Usuario jogadores[2];
                 quantidadePlayer = menuMultijogador(musica);
-                menuJogador(jogadores, quantidadePlayer);
+                menuJogador(jogadores, quantidadePlayer, musica);
+                menuComoJogar(quantidadePlayer, musica);
                 //vai ter o jogo aq e tal
                 comparaComUsuarios(jogadores, rank);
                 break;
             
             case 2:
+                desenhaPlacar(rank, vitoria);
+                break;
+                
                
                 
                 
         }
         
     }
+    free(rank);
+    free(jogadores);
+    UnloadMusicStream(musica);
+    UnloadMusicStream(derrota);
+    UnloadMusicStream(vitoria);
+    
     CloseAudioDevice();
 }
