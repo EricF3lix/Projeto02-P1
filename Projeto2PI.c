@@ -2,9 +2,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "jogo.h"
 //C:\Users\Eric Felix\Projeto2PI1
-
+typedef struct usuario {
+    char nome[20];
+    int vida;
+    int pontuacao;
+} Usuario;
 
 void salvaArquivo(Usuario rank[]);
 void carregarArquivo(Usuario rank[]);
@@ -20,10 +23,10 @@ void inicializaVetor(Usuario vetor[], int tamanho);
 float controleContadoraPlayer1(float contadora1);
 float controleContadoraPlayer2(float contadora2);
 void atualizarTelaFaseDeJogo1Dual(Music musicaFaseDeJogo,float larguraTotal, float alturaDoMapa,float tempo);
-void atualizarTelaFaseDeJogo2Dual(Music musicaFaseDeJogo,float larguraTotal, float alturaDoMapa,float contadoraPlayer1, float contadoraPlayer2, int tamanho, int *posicoes);
+void atualizarTelaFaseDeJogo2Dual(Music musicaFaseDeJogo, float larguraTotal, float alturaDoMapa, float contadoraPlayer1, float contadoraPlayer2, int tamanho, int *posicoes, Color *cores);
 void desenharMapa(float larguraTotal, float alturaDoMapa);
 int *sortearPosEQtd(int tamanho);
-void pintarQuadrados(float larguraTotal, float alturaDoMapa, int pos);
+void pintarQuadrados(float larguraTotal, float alturaDoMapa, int pos, Color cor);
 void jogoSinglePlayer(Usuario jogadores[], Music musicaFaseDeJogo, float larguraTotal, float alturaDoMapa);
 
 
@@ -147,12 +150,12 @@ void menuDerrota(int quantidadePlayer, Usuario jogador[]){
         BeginDrawing();
             ClearBackground(RAYWHITE);
 
-            // Retângulos de destaque
+            
             DrawRectangle(420, 90, 600, 60, LIGHTGRAY);  // para o texto1
             DrawRectangle(420, 150, 600, 50, LIGHTGRAY); // para o texto2
             DrawRectangle(400, 680, 640, 50, LIGHTGRAY); // para instrução
 
-            // Texto principal
+            
             char texto1[100];
             char texto2[100];
             snprintf(texto1, sizeof(texto1), "%s - VOCÊ PERDEU!", jogador[0].nome);
@@ -161,7 +164,7 @@ void menuDerrota(int quantidadePlayer, Usuario jogador[]){
             DrawText(texto1, 440, 100, 40, MAROON);
             DrawText(texto2, 440, 155, 40, MAROON);
 
-            // Texto de instrução
+            
             DrawText("Pressione ENTER para continuar", 420, 690, 35, DARKGRAY);
 
         EndDrawing();
@@ -183,7 +186,7 @@ void menuComoJogar(int quantidadePlayer, Music musica) {
         BeginDrawing();
         ClearBackground(RAYWHITE);
 
-        // Título centralizado
+        
         DrawText("COMO JOGAR", 540, 40, 60, MAROON);
 
         if (quantidadePlayer == 1) {
@@ -504,30 +507,43 @@ void atualizarTelaFaseDeJogo1Dual(Music musicaFaseDeJogo,float larguraTotal, flo
         char zero[2];
         snprintf(tempoPrintavel,sizeof(tempoPrintavel),"%.0f",tempo);
         snprintf(zero,sizeof(zero),"0");
-        //colocar um draw botando uma pergunta de quantos quadrados
-        //e um pressione enter para confirmar
         DrawText(tempoPrintavel,(larguraTotal/2)-45,alturaDoMapa,100,RED);
         DrawText(zero,40,alturaDoMapa+50,100,BLUE);
         DrawText(zero,larguraTotal-90,alturaDoMapa+50,100,GREEN);
     EndDrawing();
 }
 
-void atualizarTelaFaseDeJogo2Dual(Music musicaFaseDeJogo,float larguraTotal, float alturaDoMapa,float contadoraPlayer1, float contadoraPlayer2, int tamanho,int *posicoes){
+void atualizarTelaFaseDeJogo2Dual(Music musicaFaseDeJogo, float larguraTotal, float alturaDoMapa, float contadoraPlayer1, float contadoraPlayer2, int tamanho, int *posicoes, Color *cores){
     UpdateMusicStream(musicaFaseDeJogo);
+
     char contadora1Printavel[4];
     char contadora2Printavel[4];
+
     BeginDrawing();
         ClearBackground(BLACK);
-        DrawRectangle(0,0,larguraTotal,alturaDoMapa,WHITE);
-        for (int i = 0; i<tamanho;i++) pintarQuadrados(larguraTotal,alturaDoMapa,posicoes[i]);
-        desenharMapa(larguraTotal,alturaDoMapa);
-        snprintf(contadora1Printavel,sizeof(contadora1Printavel),"%.0f",contadoraPlayer1);
-        snprintf(contadora2Printavel,sizeof(contadora2Printavel),"%.0f",contadoraPlayer2);
-        DrawText(contadora1Printavel,40,alturaDoMapa+50,100,BLUE);
-        DrawText(contadora2Printavel,larguraTotal-90,alturaDoMapa+50,100,GREEN);
+
+        DrawRectangle(0, 0, larguraTotal, alturaDoMapa, WHITE);
+
+        if(tamanho > 0 && posicoes != NULL && cores != NULL){
+            for (int i = 0; i < tamanho; i++){
+                pintarQuadrados(larguraTotal, alturaDoMapa, posicoes[i], cores[i]);
+            }
+        }
+
+        desenharMapa(larguraTotal, alturaDoMapa);
+
+        snprintf(contadora1Printavel, sizeof(contadora1Printavel), "%.0f", contadoraPlayer1);
+        snprintf(contadora2Printavel, sizeof(contadora2Printavel), "%.0f", contadoraPlayer2);
+
+        DrawText(contadora1Printavel, 40, alturaDoMapa + 50, 100, BLUE);
+        DrawText(contadora2Printavel, 1300, alturaDoMapa + 50, 100, RED);
+
         DrawText("Quantos quadrados há?", 500, 800, 40, DARKGRAY);
+
     EndDrawing();
 }
+
+
 
 int *sortearPosEQtd(int tamanho){
     
@@ -559,14 +575,14 @@ int *sortearPosEQtd(int tamanho){
 
 
 
-void pintarQuadrados(float larguraTotal, float alturaDoMapa, int pos){
+void pintarQuadrados(float larguraTotal, float alturaDoMapa, int pos, Color cor){
     float largura = larguraTotal / 5;
     float altura = alturaDoMapa / 5;
 
     int linha = pos / 5;
     int coluna = pos % 5;
 
-    DrawRectangle(coluna * largura, linha * altura, largura, altura, RED);
+    DrawRectangle(coluna * largura, linha * altura, largura, altura, cor);
 }
 
 
@@ -586,88 +602,285 @@ void atualizarTelaFaseDeJogo1Singal(Music musicaFaseDeJogo,float larguraTotal, f
         DrawText(zero,40,alturaDoMapa+50,100,BLUE);
         
     EndDrawing();
-}
+} 
 
-void atualizarTelaFaseDeJogo2Singal(Music musicaFaseDeJogo,float larguraTotal, float alturaDoMapa,float contadoraPlayer1, float contadoraPlayer2, int tamanho,int *posicoes){
+void atualizarTelaFaseDeJogo2Singal(Music musicaFaseDeJogo,float larguraTotal,float alturaDoMapa,float contadoraPlayer1,float contadoraPlayer2,int tamanho,int *posicoes,Color coresSorteadas[] ){
     UpdateMusicStream(musicaFaseDeJogo);
-    char contadora1Printavel[4];
-    char contadora2Printavel[4];
+
     BeginDrawing();
         ClearBackground(BLACK);
         DrawRectangle(0,0,larguraTotal,alturaDoMapa,WHITE);
-        for (int i = 0; i<tamanho;i++) pintarQuadrados(larguraTotal,alturaDoMapa,posicoes[i]);
+
+        for (int i = 0; i < tamanho; i++){
+            pintarQuadrados(
+                larguraTotal,
+                alturaDoMapa,
+                posicoes[i],
+                coresSorteadas[i]       // ← usa a cor já sorteada
+            );
+        }
+
         desenharMapa(larguraTotal,alturaDoMapa);
-        
-        snprintf(contadora1Printavel,sizeof(contadora1Printavel),"%.0f",contadoraPlayer1);
-        
+
+        char contadora1Printavel[4];
+        snprintf(contadora1Printavel,sizeof(contadora1Printavel),"%.0f", contadoraPlayer1);
+
         DrawText(contadora1Printavel,40,alturaDoMapa+50,100,BLUE);
-     
         DrawText("Quantos quadrados há?", 500, 800, 40, DARKGRAY);
+
     EndDrawing();
 }
 
 
 
+
 void jogoSinglePlayer(Usuario jogadores[], Music musicaFaseDeJogo, float larguraTotal, float alturaDoMapa){
+
+    int contaRodada = 0;
     float contadoraPlayer1 = 0;
     int tamanho;
     int *posicoes = NULL;
+    Color *coresSorteadas = NULL;
     float tempo = 0;
-    int qtdQuadrados = 25;
+    int qtdQuadrados;
+    int qtdCoresUsadas;
     int turnoDeJogo = 1;
-    int quadradosVisiveis = 1; 
 
-    while(jogadores[0].vida > 0 && !WindowShouldClose()){
-        if(turnoDeJogo == 1){
+    Color cor[] = { GREEN, YELLOW, RED };
+
+    while (jogadores[0].vida > 0 && !WindowShouldClose()){
+
+        if (turnoDeJogo == 1){
+
             atualizarTelaFaseDeJogo1Singal(musicaFaseDeJogo, larguraTotal, alturaDoMapa, tempo);
             tempo += GetFrameTime();
-            if(tempo >= 5){
+
+            if (tempo >= 5){
+
+                if (contaRodada <= 5){
+                    qtdQuadrados = 10;
+                } 
+                else if (contaRodada <= 9){
+                    qtdQuadrados = 15;
+                } 
+                else {
+                    qtdQuadrados = 25;
+                }
+
                 turnoDeJogo = 2;
                 contadoraPlayer1 = 0;
+                tempo = 0;
+
                 tamanho = GetRandomValue(1, qtdQuadrados);
                 posicoes = sortearPosEQtd(tamanho);
-                tempo = 0;
-                quadradosVisiveis = 1; 
+
+                coresSorteadas = malloc(tamanho * sizeof(Color));
+
+
+                if (contaRodada < 3){
+                    qtdCoresUsadas = 1;
+                }
+                else if (contaRodada < 8){
+                    qtdCoresUsadas = 2;
+                }
+                else{
+                    qtdCoresUsadas = 3;
+                }
+
+                for (int i = 0; i < tamanho; i++){
+                    coresSorteadas[i] = cor[ GetRandomValue(0, qtdCoresUsadas - 1) ];
+                }
             }
-        } else if(turnoDeJogo == 2){
+        }
+
+        else if (turnoDeJogo == 2){
+
             contadoraPlayer1 = controleContadoraPlayer1(contadoraPlayer1);
             tempo += GetFrameTime();
 
-            
-            if(tempo < 3){
-                atualizarTelaFaseDeJogo2Singal(musicaFaseDeJogo, larguraTotal, alturaDoMapa, contadoraPlayer1, 0, tamanho, posicoes);
-            } else {
-                
-                if(quadradosVisiveis){
-                   
-                    free(posicoes);
-                    posicoes = NULL;
-                    quadradosVisiveis = 0;
-                }
+            if (tempo < 3){
+                atualizarTelaFaseDeJogo2Singal(musicaFaseDeJogo, larguraTotal, alturaDoMapa,contadoraPlayer1, 0, tamanho, posicoes, coresSorteadas);
+            } 
+            else {
 
-                
-                atualizarTelaFaseDeJogo2Singal(musicaFaseDeJogo, larguraTotal, alturaDoMapa, contadoraPlayer1, 0, 0, NULL);
-                
+                atualizarTelaFaseDeJogo2Singal(musicaFaseDeJogo, larguraTotal, alturaDoMapa,contadoraPlayer1, 0, 0, NULL, NULL);
 
-                
-                if(IsKeyPressed(KEY_ENTER)){
+                if (IsKeyPressed(KEY_F)){
+
                     int diferenca1 = (int)(contadoraPlayer1 + 0.5) - tamanho;
-                    if(diferenca1 == 0){
-                        jogadores[0].pontuacao += 150; 
-                    } else if(diferenca1 == 1 || diferenca1 == -1){
+
+                    if (diferenca1 == 0){
+                        jogadores[0].pontuacao += 150;
+                    } 
+                    else if (diferenca1 == 1 || diferenca1 == -1){
                         jogadores[0].pontuacao += 50;
                         jogadores[0].vida--;
-                    } else {
+                    } 
+                    else {
                         jogadores[0].vida--;
                     }
 
                     tempo = 0;
-                    turnoDeJogo = 1;
+                    turnoDeJogo = 1; 
+                    contaRodada++;
+
+                    free(posicoes);
+                    free(coresSorteadas);
+
+                    posicoes = NULL;
+                    coresSorteadas = NULL;
                 }
             }
         }
     }
 }
+
+
+
+
+
+void jogoDualPlayer(Usuario jogadores[], Music musicaFaseDeJogo, float larguraTotal, float alturaDoMapa){
+
+    Color cor[] = { GREEN, YELLOW, RED };
+    Color *coresSorteadas = NULL;
+
+    bool podeJogar1 = true;
+    bool podeJogar2 = true;
+
+    float contadoraPlayer1 = 0;
+    float contadoraPlayer2 = 0;
+
+    int tamanho;
+    int *posicoes = NULL;
+
+    float tempo = 0;
+    int turnoDeJogo = 1;
+    int contaRodada = 0;
+
+    int qtdQuadrados;
+
+    while (jogadores[0].vida > 0 && jogadores[1].vida > 0 && !WindowShouldClose()){
+
+        if (turnoDeJogo == 1){
+
+            atualizarTelaFaseDeJogo1Dual(musicaFaseDeJogo, larguraTotal, alturaDoMapa, tempo);
+            tempo += GetFrameTime();
+
+            if (tempo >= 5){
+
+                
+                if (contaRodada <= 5){
+                    qtdQuadrados = 10;
+                }
+                else if (contaRodada <= 9){
+                    qtdQuadrados = 15;
+                }
+                else{
+                    qtdQuadrados = 25;
+                }
+
+                tamanho = GetRandomValue(1, qtdQuadrados);
+                posicoes = sortearPosEQtd(tamanho);
+
+                
+                int qtdCoresUsadas;
+
+                if (contaRodada <= 5){
+                    qtdCoresUsadas = 1; 
+                }
+                else if (contaRodada <= 9){
+                    qtdCoresUsadas = 2; 
+                }
+                else{
+                    qtdCoresUsadas = 3; 
+                }
+
+                coresSorteadas = malloc(tamanho * sizeof(Color));
+
+                for (int i = 0; i < tamanho; i++){
+                    coresSorteadas[i] = cor[ GetRandomValue(0, qtdCoresUsadas - 1) ];
+                }
+
+                turnoDeJogo = 2;
+                contadoraPlayer1 = 0;
+                contadoraPlayer2 = 0;
+                tempo = 0;
+            }
+        }
+
+        else if (turnoDeJogo == 2){
+
+            if (podeJogar1) contadoraPlayer1 = controleContadoraPlayer1(contadoraPlayer1);
+            if (podeJogar2) contadoraPlayer2 = controleContadoraPlayer2(contadoraPlayer2);
+
+            tempo += GetFrameTime();
+
+            if (tempo < 3){
+                atualizarTelaFaseDeJogo2Dual(musicaFaseDeJogo, larguraTotal, alturaDoMapa, contadoraPlayer1, contadoraPlayer2,tamanho, posicoes, coresSorteadas);
+            }
+            else {
+
+                atualizarTelaFaseDeJogo2Dual(musicaFaseDeJogo, larguraTotal, alturaDoMapa,contadoraPlayer1, contadoraPlayer2,0, NULL, NULL);
+
+                if (IsKeyPressed(KEY_F) && podeJogar1){
+                    int dif1 = (int)(contadoraPlayer1 + 0.5) - tamanho;
+
+                    if (dif1 == 0){
+                        jogadores[0].pontuacao += 150;
+                    }
+                    else if (dif1 == 1 || dif1 == -1){
+                        jogadores[0].pontuacao += 50;
+                        jogadores[0].vida--;
+                    }
+                    else{
+                        jogadores[0].vida--;
+                    }
+
+                    podeJogar1 = false;
+                }
+
+                if (IsKeyPressed(KEY_ENTER) && podeJogar2){
+                    int dif2 = (int)(contadoraPlayer2 + 0.5) - tamanho;
+
+                    if (dif2 == 0){
+                        jogadores[1].pontuacao += 150;
+                    }
+                    else if (dif2 == 1 || dif2 == -1){
+                        jogadores[1].pontuacao += 50;
+                        jogadores[1].vida--;
+                    }
+                    else{
+                        jogadores[1].vida--;
+                    }
+
+                    podeJogar2 = false;
+                }
+
+                if (!podeJogar1 && !podeJogar2){
+
+                    free(posicoes);
+                    free(coresSorteadas);
+
+                    posicoes = NULL;
+                    coresSorteadas = NULL;
+
+                    tempo = 0;
+                    turnoDeJogo = 1;
+                    podeJogar1 = true;
+                    podeJogar2 = true;
+                    contaRodada++;
+                    free(posicoes);
+                    free(coresSorteadas);
+
+                    posicoes = NULL;
+                    coresSorteadas = NULL;
+                }
+            }
+        }
+    }
+}
+
+
 
 
 
@@ -737,10 +950,10 @@ int main(){
                 menuComoJogar(quantidadePlayer, musica);
                 if (quantidadePlayer ==1){
                     jogoSinglePlayer(jogadores, musicaFaseDeJogo,larguraTela , alturaDoMapa);
-                    menuDerrota(quantidadePlayer, jogadores);
-                    
-                    
+                } else{
+                    jogoDualPlayer(jogadores,musicaFaseDeJogo, larguraTela, alturaDoMapa);
                 }
+                menuDerrota(quantidadePlayer, jogadores);
                 comparaComUsuarios(jogadores, rank);
                 inicializaVetor(jogadores, 2);
                 break;
