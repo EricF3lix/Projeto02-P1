@@ -18,6 +18,7 @@ Music musicaDerrota;
 Music musicaVitoria;
 Music musicaJogo;
 
+
 void salvaArquivo(Usuario rank[]);
 void carregarArquivo(Usuario rank[]);
 void desenhaPlacar(Usuario rank[]);
@@ -31,11 +32,11 @@ int menu();
 void inicializaVetor(Usuario vetor[], int tamanho);
 float controleContadoraPlayer1(float contadora1);
 float controleContadoraPlayer2(float contadora2);
-void atualizarTelaFaseDeJogo1Dual(float larguraTotal, float alturaDoMapa, float tempo); // removido Music
-void atualizarTelaFaseDeJogo2Dual(float larguraTotal, float alturaDoMapa, float contadoraPlayer1, float contadoraPlayer2, int tamanho, int *posicoes, Color *cores); // removido Music
+void atualizarTelaFaseDeJogo1Dual(float larguraTotal, float alturaDoMapa, float tempo); 
+void atualizarTelaFaseDeJogo2Dual(float larguraTotal, float alturaDoMapa, float contadoraPlayer1, float contadoraPlayer2, int tamanho, int *posicoes, Color *cores); 
 int *sortearPosEQtd(int tamanho);
 void pintarQuadrados(float larguraTotal, float alturaDoMapa, int pos, Color cor);
-void jogoSinglePlayer(Usuario jogadores[], float larguraTotal, float alturaDoMapa, Texture2D imagemRodape); // removido Music
+void jogoSinglePlayer(Usuario jogadores[], float larguraTotal, float alturaDoMapa); 
 void desenharQuadradosDaRodada(float larguraTotal, float alturaDoMapa, int tamanho, int *posicoes, Color coresSorteadas[]);
 
 
@@ -47,7 +48,7 @@ void desenhaPlacar(Usuario rank[]){
 
     Rectangle botaoVoltar = {20, 20, 120, 50};
     int parar = 1;
-
+    Texture2D imagemFundo = LoadTexture("imagemfundo.png");
     while(parar!=0 && !WindowShouldClose()){
         UpdateMusicStream(musicaVitoria);
         Vector2 mouse = GetMousePosition();
@@ -55,7 +56,7 @@ void desenhaPlacar(Usuario rank[]){
 
         BeginDrawing();
 
-            ClearBackground(RAYWHITE);
+            DrawTexture(imagemFundo, 0, 0, WHITE); 
 
             DrawText("RANK TOP 10 DO DEU A LOUCA NO QUADRADO!", 220, 30, 40, MAROON);
 
@@ -65,7 +66,7 @@ void desenhaPlacar(Usuario rank[]){
             for(int i = 0 ; i < 10 ; i++){
                 snprintf(jogador, sizeof(jogador), "%dº - %s %d", i+1, rank[i].nome, rank[i].pontuacao);
 
-                DrawRectangle(300, eixoY - 5, 840, 40, LIGHTGRAY);
+                DrawRectangle(300, eixoY - 5, 840, 40, GRAY);
 
                 if(i<=2){
                     DrawText(jogador, 310, eixoY, 30, MAROON);
@@ -88,6 +89,7 @@ void desenhaPlacar(Usuario rank[]){
 
     
     StopMusicStream(musicaVitoria);
+    UnloadTexture(imagemFundo);
     
 }
 
@@ -160,147 +162,218 @@ void salvaArquivo(Usuario rank[]){
     }
 }
 
-void mostraAcerto(int quantidadePlayer,int contadoraPlayer1,int contadoraPlayer2,int tamanho,Usuario jogadores[],Texture2D imagemRodape,float larguraTotal,float alturaDoMapa,int *posicoes,Color coresSorteadas[], int rodadaAtual) {
+
+int menuSairDoJogo() {
+    PlayMusicStream(musicaDerrota);
+    Texture2D imagemFim = LoadTexture("imagemFim.png");
+
+    int opcao = -1;
+
+
+    Rectangle botaoSair   = { 560, 700, 320, 65 };
+    Rectangle botaoVoltar = { 560, 785, 320, 65 };
+
+    while (opcao == -1 && !WindowShouldClose()) {
+        UpdateMusicStream(musicaDerrota);
+        Vector2 mouse = GetMousePosition();
+
+        bool sair   = CheckCollisionPointRec(mouse, botaoSair);
+        bool voltar = CheckCollisionPointRec(mouse, botaoVoltar);
+
+        BeginDrawing();
+            ClearBackground(BLACK);
+            DrawTexture(imagemFim, 0, 0, WHITE);
+
+            DrawText("ARREGOU?", 470, 20, 80, MAROON);
+            DrawText("Obrigado por ter jogado!", 310, 100, 60, RAYWHITE);
+
+            DrawText("Feito por", 1250, 800, 20, RAYWHITE);
+            DrawText("Eric Felix", 1250, 840, 20, RAYWHITE);
+            DrawText("Rodrigo de Alvino", 1250, 860, 20, RAYWHITE);
+            
+            DrawRectangleRec(botaoSair, sair ? LIGHTGRAY : GRAY);
+            DrawText("SAIR DO JOGO", botaoSair.x + 45, botaoSair.y + 18, 32, BLACK);
+
+            
+            DrawRectangleRec(botaoVoltar, voltar ? LIGHTGRAY : GRAY);
+            DrawText("VOLTAR AO JOGO", botaoVoltar.x + 20, botaoVoltar.y + 18, 32, BLACK);
+
+        EndDrawing();
+
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            if (sair) {
+                PlaySound(beep);
+                opcao = 0;
+            }
+            else if (voltar) {
+                PlaySound(beep);
+                opcao = 1;
+            }
+        }
+    }
+    StopMusicStream(musicaDerrota);
+    UnloadTexture(imagemFim);
+    return opcao;
+}
+
+
+
+
+
+void mostraAcerto(int quantidadePlayer,int contadoraPlayer1,int contadoraPlayer2,int tamanho,Usuario jogadores[], float larguraTotal,float alturaDoMapa,int *posicoes,Color coresSorteadas[], int rodadaAtual) {
     float tempo = 0;
     char texto[200];
-
+    Texture2D imagemFundo = LoadTexture("imagemfundo.png");
     while (tempo < 5 && !WindowShouldClose()) {
 
         UpdateMusicStream(musicaJogo);
         tempo += GetFrameTime();
 
         BeginDrawing();
-        ClearBackground(BLACK);
+            DrawTexture(imagemFundo, 0, 0, WHITE);  
 
         
-        desenharQuadradosDaRodada(larguraTotal, alturaDoMapa, tamanho, posicoes, coresSorteadas);
+            desenharQuadradosDaRodada(larguraTotal, alturaDoMapa, tamanho, posicoes, coresSorteadas);
 
-        
-        DrawRectangle(0, alturaDoMapa, larguraTotal, 300, BLACK);
+            
+            DrawRectangle(0, alturaDoMapa, larguraTotal, 300, BLACK);
 
-        DrawText("Confira seus acertos!", larguraTotal/2 - 250, alturaDoMapa + 20, 50, MAROON);
+            DrawText("Confira seus acertos!", larguraTotal/2 - 250, alturaDoMapa + 20, 50, MAROON);
 
-        
-        snprintf(texto, sizeof(texto), "%s contou: %d", jogadores[0].nome, contadoraPlayer1);
-        DrawText(texto, 50, alturaDoMapa + 100, 40, BLUE);
-
-        snprintf(texto, sizeof(texto), "Vida: %d   |   Pontos: %d",
-                 jogadores[0].vida, jogadores[0].pontuacao);
-        DrawText(texto, 50, alturaDoMapa + 150, 35, RAYWHITE);
-
-        
-        snprintf(texto, sizeof(texto), "Quantidade correta: %d", tamanho);
-        DrawText(texto, larguraTotal/2 - 180, alturaDoMapa + 80, 35, YELLOW);
-        
-        snprintf(texto, sizeof(texto), "Rodada: %d", rodadaAtual);
-        DrawText(texto, larguraTotal/2 -20, alturaDoMapa + 180, 20, ORANGE);
-        
-        if (quantidadePlayer == 2) {
-            snprintf(texto, sizeof(texto), "%s contou: %d", jogadores[1].nome, contadoraPlayer2);
-            DrawText(texto, larguraTotal - 450, alturaDoMapa + 100, 40, GREEN);
+            
+            snprintf(texto, sizeof(texto), "%s contou: %d", jogadores[0].nome, contadoraPlayer1);
+            DrawText(texto, 50, alturaDoMapa + 100, 40, BLUE);
 
             snprintf(texto, sizeof(texto), "Vida: %d   |   Pontos: %d",
-                     jogadores[1].vida, jogadores[1].pontuacao);
-            DrawText(texto, larguraTotal - 450, alturaDoMapa + 150, 35, RAYWHITE);
-        }
+                     jogadores[0].vida, jogadores[0].pontuacao);
+            DrawText(texto, 50, alturaDoMapa + 150, 35, RAYWHITE);
+
+            
+            snprintf(texto, sizeof(texto), "Quantidade correta: %d", tamanho);
+            DrawText(texto, larguraTotal/2 - 180, alturaDoMapa + 80, 35, YELLOW);
+            
+            snprintf(texto, sizeof(texto), "Rodada: %d", rodadaAtual);
+            DrawText(texto, larguraTotal/2 -20, alturaDoMapa + 180, 20, ORANGE);
+            
+            if (quantidadePlayer == 2) {
+                snprintf(texto, sizeof(texto), "%s contou: %d", jogadores[1].nome, contadoraPlayer2);
+                DrawText(texto, larguraTotal - 450, alturaDoMapa + 100, 40, GREEN);
+
+                snprintf(texto, sizeof(texto), "Vida: %d   |   Pontos: %d",
+                         jogadores[1].vida, jogadores[1].pontuacao);
+                DrawText(texto, larguraTotal - 450, alturaDoMapa + 150, 35, RAYWHITE);
+            }
 
         EndDrawing();
     }
+    UnloadTexture(imagemFundo);
 }
 
 
 
 
-void menuDerrota(int quantidadePlayer, Usuario jogador[]){
+void menuDerrota(int quantidadePlayer, Usuario jogador[]) {
     
-    int enter = 1;
-
-    while(enter != 0 && !WindowShouldClose()){
+    
+    int space = 1;
+    Texture2D imagemFundo = LoadTexture("imagemfundo.png");
+    while (space != 0 && !WindowShouldClose()) {
         UpdateMusicStream(musicaMenu);
+
         BeginDrawing();
-            ClearBackground(RAYWHITE);
+            DrawTexture(imagemFundo, 0, 0, WHITE);  
+            DrawRectangleRounded((Rectangle){300, 120, 800, 450}, 0.2f, 20, LIGHTGRAY);
 
-            DrawRectangle(420, 90, 600, 60, LIGHTGRAY);
-            DrawRectangle(420, 150, 600, 50, LIGHTGRAY);
-            DrawRectangle(400, 680, 640, 50, LIGHTGRAY);
+            DrawRectangleRoundedLines((Rectangle){300, 120, 800, 450}, 0.2f, 20, GRAY);
 
-            char texto1[100];
-            char texto2[100];
-            snprintf(texto1, sizeof(texto1), "%s - VOCÊ PERDEU!", jogador[0].nome);
-            snprintf(texto2, sizeof(texto2), "Sua pontuação total foi: %d", jogador[0].pontuacao);
+            DrawText("DERROTA!", 550, 145, 60, RED);
 
-            DrawText(texto1, 440, 100, 40, MAROON);
-            DrawText(texto2, 440, 155, 40, MAROON);
+            char texto[200];
+            snprintf(texto, sizeof(texto),
+                     "%s | Pontuação: %d",
+                     jogador[0].nome, jogador[0].pontuacao);
 
-            DrawText("Pressione ENTER para continuar", 420, 690, 35, DARKGRAY);
+            DrawText(texto, 350, 260, 40, BLACK);
+
+            if (quantidadePlayer == 2) {
+                snprintf(texto, sizeof(texto),
+                         "%s | Pontuação: %d",
+                         jogador[1].nome, jogador[1].pontuacao);
+
+                DrawText(texto, 350, 330, 40, BLACK);
+            }
+
+            DrawText("Pressione ESPAÇO para continuar",400, 520, 35,RED);
 
         EndDrawing();
 
-        if (IsKeyPressed(KEY_ENTER)) {
-            PlaySound(beep);   
-            enter = 0;
+        if (IsKeyPressed(KEY_SPACE)) {
+            PlaySound(beep);
+            space = 0;
         }
     }
-    
+    UnloadTexture(imagemFundo);
 }
+
+
 
 
 
 
 
 void menuComoJogar(int quantidadePlayer) {
-    int enter = 1;
 
-    while (enter != 0 && !WindowShouldClose()) {
+    int space = 1;
+    Texture2D imagemFundo = LoadTexture("imagemfundo.png");
+    while (space!=0 && !WindowShouldClose()) {
+
         UpdateMusicStream(musicaMenu);
 
         BeginDrawing();
-        ClearBackground(RAYWHITE);
+            DrawTexture(imagemFundo, 0, 0, WHITE);  
 
-        DrawText("COMO JOGAR", 540, 40, 60, MAROON);
+        
+            DrawRectangleRounded((Rectangle){120, 40, 1200, 700}, 0.10f, 12, LIGHTGRAY);
 
-        if (quantidadePlayer == 1) {
+            DrawRectangleRoundedLines((Rectangle){120, 40, 1200, 700}, 0.10f, 12,GRAY);
 
-            DrawText("Modo selecionado: SINGLE PLAYER", 440, 150, 40, BLACK);
-            DrawText("Controles:", 600, 230, 36, MAROON);
+        
+        DrawText("COMO JOGAR", 520, 100, 50, DARKBLUE);
 
-            DrawText("W", 500, 300, 32, RED);
-            DrawText(" - Aumenta a quantidade de quadrados", 540, 300, 32, BLACK);
+       
+        DrawText("JOGADOR 1", 260, 180, 35, MAROON);
 
-            DrawText("S", 500, 360, 32, RED);
-            DrawText(" - Diminui a quantidade de quadrados", 585, 360, 32, BLACK);
-        }
-        else {
+        DrawText("W  - Aumentar contadora", 260, 230, 30, BLACK);
+        DrawText("S  - Diminuir contadora", 260, 270, 30, BLACK);
+        DrawText("E  - Aumentar +5",        260, 310, 30, BLACK);
+        DrawText("Q  - Diminuir -5",        260, 350, 30, BLACK);
+        DrawText("F  - Confirmar resposta", 260, 390, 30, BLACK);
 
-            DrawText("Modo selecionado: DUAL PLAYER", 470, 150, 40, BLACK);
+        
+        if (quantidadePlayer == 2) {
 
-            DrawText("Jogador 1", 400, 230, 36, MAROON);
+            DrawText("JOGADOR 2", 760, 180, 35, DARKGREEN);
 
-            DrawText("UP", 400, 290, 32, RED);
-            DrawText(" - Aumenta os quadrados", 440, 290, 32, BLACK);
-
-            DrawText("DOWN", 400, 350, 32, RED);
-            DrawText(" - Diminui os quadrados", 485, 350, 32, BLACK);
-
-            DrawText("Jogador 2", 900, 230, 36, MAROON);
-
-            DrawText("W", 900, 290, 32, RED);
-            DrawText(" - Aumenta os quadrados", 940, 290, 32, BLACK);
-
-            DrawText("S", 900, 350, 32, RED);
-            DrawText(" - Diminui os quadrados", 940, 350, 32, BLACK);
+            DrawText("UP - Aumentar contadora",      760, 230, 30, BLACK);
+            DrawText("DOWN - Diminuir contadora",      760, 270, 30, BLACK);
+            DrawText("RIGHT - Aumentar +5",              760, 310, 30, BLACK);
+            DrawText("LEFT - Diminuir -5",              760, 350, 30, BLACK);
+            DrawText("ENTER - Confirmar resposta", 760, 390, 30, BLACK);
         }
 
-        DrawText("Pressione ENTER para continuar", 500, 700, 36, DARKGRAY);
+        
+        DrawText("Pressione ESPAÇO para continuar", 360, 630, 32, DARKGRAY);
 
         EndDrawing();
 
-        if (IsKeyPressed(KEY_ENTER)) {
-            enter = 0;
-            PlaySound(beep); 
+        if (IsKeyPressed(KEY_SPACE)) {
+            PlaySound(beep);
+            space = 0;
         }
     }
+    UnloadTexture(imagemFundo);
 }
+
 
 
 
@@ -310,20 +383,21 @@ void menuComoJogar(int quantidadePlayer) {
 
 
 void menuJogador(Usuario jogadores[], int quantidadePlayer) {
-    Rectangle caixa1 = { 520, 250, 400, 60 };
-    Rectangle caixa2 = { 520, 430, 400, 60 };
+    
+    Rectangle caixa1 = { 500, 260, 450, 70 };
+    Rectangle caixa2 = { 500, 430, 450, 70 };
 
     bool ativa1 = false;
     bool ativa2 = false;
 
     int len1 = 0;
     int len2 = 0;
-
+    Texture2D imagemFundo = LoadTexture("imagemfundo.png");
     while (!WindowShouldClose()) {
         UpdateMusicStream(musicaMenu);
 
         Vector2 mouse = GetMousePosition();
-
+        
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             if (CheckCollisionPointRec(mouse, caixa1)) {
                 ativa1 = true;
@@ -338,6 +412,7 @@ void menuJogador(Usuario jogadores[], int quantidadePlayer) {
             }
         }
 
+        
         if (ativa1) {
             int key = GetCharPressed();
             while (key > 0) {
@@ -348,12 +423,14 @@ void menuJogador(Usuario jogadores[], int quantidadePlayer) {
                 }
                 key = GetCharPressed();
             }
+
             if (IsKeyPressed(KEY_BACKSPACE) && len1 > 0) {
                 len1--;
                 jogadores[0].nome[len1] = '\0';
             }
         }
 
+        
         if (ativa2) {
             int key = GetCharPressed();
             while (key > 0) {
@@ -364,47 +441,63 @@ void menuJogador(Usuario jogadores[], int quantidadePlayer) {
                 }
                 key = GetCharPressed();
             }
+
             if (IsKeyPressed(KEY_BACKSPACE) && len2 > 0) {
                 len2--;
                 jogadores[1].nome[len2] = '\0';
             }
         }
 
-        if (IsKeyPressed(KEY_ENTER)) {
+       
+        if (IsKeyPressed(KEY_SPACE)) {
             if (quantidadePlayer == 1 && len1 > 0) break;
             if (quantidadePlayer == 2 && len1 > 0 && len2 > 0) break;
+
             PlaySound(beep);
         }
 
+      
         BeginDrawing();
-        ClearBackground(RAYWHITE);
+            DrawTexture(imagemFundo, 0, 0, WHITE);
 
-        DrawText("Jogador 1 - Digite seu nome:", 520, 200, 32, BLACK);
-        DrawRectangleRec(caixa1, ativa1 ? LIGHTGRAY : GRAY);
-        DrawRectangleLinesEx(caixa1, 3, DARKGRAY);
-        DrawText(jogadores[0].nome, caixa1.x + 10, caixa1.y + 15, 30, BLACK);
+            DrawText("DIGITE OS NOMES DOS JOGADORES", 300, 120, 50, MAROON);
 
-        if (ativa1) {
-            DrawText("_", caixa1.x + 10 + MeasureText(jogadores[0].nome, 30), caixa1.y + 15, 30, BLACK);
-        }
+           
+            DrawText("Jogador 1:", 500, 215, 32, BLACK);
 
-        if (quantidadePlayer == 2) {
+            DrawRectangleRounded(caixa1, 0.3f, 20, LIGHTGRAY);
+            DrawRectangleRoundedLines(caixa1, 0.3f, 20, GRAY);
 
-            DrawText("Jogador 2 - Digite seu nome:", 520, 380, 32, BLACK);
-            DrawRectangleRec(caixa2, ativa2 ? LIGHTGRAY : GRAY);
-            DrawRectangleLinesEx(caixa2, 3, DARKGRAY);
-            DrawText(jogadores[1].nome, caixa2.x + 10, caixa2.y + 15, 30, BLACK);
+            DrawText(jogadores[0].nome, caixa1.x + 15, caixa1.y + 20, 34, BLACK);
 
-            if (ativa2) {
-                DrawText("_", caixa2.x + 10 + MeasureText(jogadores[1].nome, 30), caixa2.y + 15, 30, BLACK);
+            if (ativa1)
+                DrawText("_",
+                    caixa1.x + 15 + MeasureText(jogadores[0].nome, 34),
+                    caixa1.y + 20, 34, BLACK);
+
+           
+            if (quantidadePlayer == 2) {
+                DrawText("Jogador 2:", 500, 385, 32, BLACK);
+
+                DrawRectangleRounded(caixa2, 0.3f, 20, LIGHTGRAY);
+                DrawRectangleRoundedLines(caixa2, 0.3f, 20, GRAY);
+
+                DrawText(jogadores[1].nome, caixa2.x + 15, caixa2.y + 20, 34, BLACK);
+
+                if (ativa2)
+                    DrawText("_",
+                        caixa2.x + 15 + MeasureText(jogadores[1].nome, 34),
+                        caixa2.y + 20, 34, BLACK);
             }
-        }
 
-        DrawText("Pressione ENTER para confirmar", 480, 650, 36, DARKGRAY);
+            DrawText("Pressione ESPAÇO para continuar",
+                     420, 720, 36, DARKGRAY);
 
         EndDrawing();
     }
+    UnloadTexture(imagemFundo);
 }
+
 
 
 
@@ -418,7 +511,7 @@ int menuMultijogador() {
     
     Rectangle botao1Player = {570, 500, 300, 70};
     Rectangle botao2Player = {570, 600, 300, 70};
-
+    Texture2D imagemFundo = LoadTexture("imagemfundo.png");
     while (!WindowShouldClose()){
         UpdateMusicStream(musicaMenu);
         Vector2 mouse = GetMousePosition();
@@ -426,7 +519,7 @@ int menuMultijogador() {
         bool player2 = CheckCollisionPointRec(mouse, botao2Player);
         
         BeginDrawing();
-            ClearBackground(RAYWHITE);
+            DrawTexture(imagemFundo, 0, 0, WHITE);
 
             DrawText(texto[0], 450, 80, 60, BLACK);
 
@@ -435,19 +528,21 @@ int menuMultijogador() {
             DrawText(texto[3], 540, 300, 45, MAROON);
 
             DrawRectangleRec(botao1Player, player1 ? LIGHTGRAY : GRAY);
-            DrawText("SINGLE PLAYER", botao1Player.x + 40, botao1Player.y + 22, 30, BLACK);
+            DrawText("SINGLE PLAYER", botao1Player.x + 30, botao1Player.y + 22, 30, BLACK);
             
             DrawRectangleRec(botao2Player, player2 ? LIGHTGRAY : GRAY);
-            DrawText("DUAL PLAYER", botao2Player.x + 70, botao2Player.y + 22, 30, BLACK);
+            DrawText("DUAL PLAYER", botao2Player.x + 40, botao2Player.y + 22, 30, BLACK);
         
         EndDrawing();
 
         if (player1 && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
             PlaySound(beep);
+            UnloadTexture(imagemFundo);
             return 1;
         }
         if (player2 && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
             PlaySound(beep);
+            UnloadTexture(imagemFundo);
             return 2;
         }               
     }
@@ -469,7 +564,7 @@ int menu() {
     Rectangle botaoJogar  = { 570, 500, 300, 70 };
     Rectangle botaoPlacar = { 570, 600, 300, 70 };
     Rectangle botaoSair   = { 570, 700, 300, 70 };
-
+    Texture2D imagemFundo = LoadTexture("imagemfundo.png");
     while (!WindowShouldClose()) {
         UpdateMusicStream(musicaMenu);   
 
@@ -480,39 +575,43 @@ int menu() {
         bool sair   = CheckCollisionPointRec(mouse, botaoSair);
 
         BeginDrawing();
-        ClearBackground(RAYWHITE);
+            DrawTexture(imagemFundo, 0, 0, WHITE);
 
-        DrawText(texto[0], 400, 80, 50, BLACK);
-        DrawText(texto[1], 250, 150, 75, MAROON);
-        DrawText(texto[2], 430, 250, 30, DARKGRAY);
+            DrawText(texto[0], 400, 80, 50, BLACK);
+            DrawText(texto[1], 250, 150, 75, MAROON);
+            DrawText(texto[2], 430, 250, 30, DARKGRAY);
 
-        DrawRectangleRec(botaoJogar, jogar ? LIGHTGRAY : GRAY);
-        DrawText("JOGAR", botaoJogar.x + 95, botaoJogar.y + 20, 35, BLACK);
+            DrawRectangleRec(botaoJogar, jogar ? LIGHTGRAY : GRAY);
+            DrawText("JOGAR", botaoJogar.x + 95, botaoJogar.y + 20, 35, BLACK);
 
-        DrawRectangleRec(botaoPlacar, placar ? LIGHTGRAY : GRAY);
-        DrawText("PLACAR", botaoPlacar.x + 85, botaoPlacar.y + 20, 35, BLACK);
+            DrawRectangleRec(botaoPlacar, placar ? LIGHTGRAY : GRAY);
+            DrawText("PLACAR", botaoPlacar.x + 85, botaoPlacar.y + 20, 35, BLACK);
 
-        DrawRectangleRec(botaoSair, sair ? LIGHTGRAY : GRAY);
-        DrawText("SAIR", botaoSair.x + 110, botaoSair.y + 20, 35, BLACK);
+            DrawRectangleRec(botaoSair, sair ? LIGHTGRAY : GRAY);
+            DrawText("SAIR", botaoSair.x + 110, botaoSair.y + 20, 35, BLACK);
 
         EndDrawing();
 
         if (jogar && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){ 
             PlaySound(beep);
+            UnloadTexture(imagemFundo);
             return 1;
             
         }
         if (placar && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
             PlaySound(beep);
+            UnloadTexture(imagemFundo);
             return 2;
             
         }
         if (sair && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-            PlaySound(beep); 
+            PlaySound(beep);
+            UnloadTexture(imagemFundo);            
             return 0;
             
         }
     }
+    
     
 }
 
@@ -571,11 +670,11 @@ float controleContadoraPlayer2(float contadoraPlayer2){
         PlaySound(click);
     }
     if(IsKeyPressed(KEY_LEFT)){
-        contadoraPlayer2+=5;
+        contadoraPlayer2-=5;
         PlaySound(click);
     }
     if(IsKeyPressed(KEY_RIGHT)){
-        contadoraPlayer2-=5;
+        contadoraPlayer2+=5;
         PlaySound(click);
     }
     if (contadoraPlayer2 < 0){
@@ -735,7 +834,7 @@ void desenharQuadradosDaRodada(float larguraTotal, float alturaDoMapa, int taman
 
 
 
-void jogoSinglePlayer(Usuario jogadores[], float larguraTotal, float alturaDoMapa, Texture2D imagemRodape){
+void jogoSinglePlayer(Usuario jogadores[], float larguraTotal, float alturaDoMapa){
     PlayMusicStream(musicaJogo);
     
     int contaRodada = 0;
@@ -763,24 +862,31 @@ void jogoSinglePlayer(Usuario jogadores[], float larguraTotal, float alturaDoMap
 
             if (tempo >= 5){
 
-                if (contaRodada <= 5){
+                if (contaRodada < 3){
                     qtdQuadrados = 10;
                     tamanho = GetRandomValue(1, qtdQuadrados);
                     qtdCoresUsadas = 1;
                     tempoDoJogo = 3;
                 } 
-                else if (contaRodada <= 9){
+                else if (contaRodada < 7){
                     qtdQuadrados = 15;
                     tamanho = GetRandomValue(7, qtdQuadrados);
                     qtdCoresUsadas = 2;
                     tempoDoJogo = 2;
                 } 
-                else {
+                else if (contaRodada < 10) {
                     qtdQuadrados = 25;
                     tamanho = GetRandomValue(15, qtdQuadrados);
                     qtdCoresUsadas = 3;
                     tempoDoJogo = 1;
                 }
+                else {
+                    qtdQuadrados = 25;
+                    tamanho = GetRandomValue(15, qtdQuadrados);
+                    qtdCoresUsadas = 3;
+                    tempoDoJogo = 0.5;
+                }
+                    
 
                 turnoDeJogo = 2;
                 contadoraPlayer1 = 0;
@@ -825,7 +931,7 @@ void jogoSinglePlayer(Usuario jogadores[], float larguraTotal, float alturaDoMap
                     tempo = 0;
                     turnoDeJogo = 1;
                     
-                    mostraAcerto(1,contadoraPlayer1,0,tamanho,jogadores,imagemRodape,larguraTotal,alturaDoMapa,posicoes,coresSorteadas, contaRodada+1);
+                    mostraAcerto(1,contadoraPlayer1,0,tamanho,jogadores, larguraTotal,alturaDoMapa,posicoes,coresSorteadas, contaRodada+1);
 
                     contaRodada++;
 
@@ -845,7 +951,7 @@ void jogoSinglePlayer(Usuario jogadores[], float larguraTotal, float alturaDoMap
 
 
 
-void jogoDualPlayer(Usuario jogadores[], float larguraTotal, float alturaDoMapa, Texture2D imagemRodape){
+void jogoDualPlayer(Usuario jogadores[], float larguraTotal, float alturaDoMapa){
     PlayMusicStream(musicaJogo);
     Color cor[] = { GREEN, YELLOW, RED };
     Color *coresSorteadas = NULL;
@@ -879,23 +985,30 @@ void jogoDualPlayer(Usuario jogadores[], float larguraTotal, float alturaDoMapa,
 
             if (tempo >= 5){
 
-                if (contaRodada <= 5){
+                if (contaRodada < 3){
                     qtdQuadrados = 10;
                     tamanho = GetRandomValue(1, qtdQuadrados);
                     qtdCoresUsadas = 1;
                     tempoDoJogo = 3;
                 }
-                else if (contaRodada <= 9){
+                else if (contaRodada < 7){
                     qtdQuadrados = 15;
                     tamanho = GetRandomValue(7, qtdQuadrados);
                     qtdCoresUsadas = 2; 
                     tempoDoJogo = 2;
                 }
-                else{
+                else if (contaRodada < 10){
                     qtdQuadrados = 25;
                     tamanho = GetRandomValue(15, qtdQuadrados);
                     qtdCoresUsadas = 3; 
                     tempoDoJogo = 1;
+                }
+                else {
+                    qtdQuadrados = 25;
+                    tamanho = GetRandomValue(15, qtdQuadrados);
+                    qtdCoresUsadas = 3; 
+                    tempoDoJogo = 0.5;
+                    
                 }
 
                 posicoes = sortearPosEQtd(tamanho);
@@ -969,7 +1082,7 @@ void jogoDualPlayer(Usuario jogadores[], float larguraTotal, float alturaDoMapa,
                     podeJogar1 = true;
                     podeJogar2 = true;
                     
-                    mostraAcerto(2,contadoraPlayer1,contadoraPlayer2 ,tamanho,jogadores,imagemRodape,larguraTotal,alturaDoMapa,posicoes,coresSorteadas, contaRodada+1);
+                    mostraAcerto(2,contadoraPlayer1,contadoraPlayer2 ,tamanho,jogadores, larguraTotal,alturaDoMapa,posicoes,coresSorteadas, contaRodada+1);
 
                     contaRodada++;
                     
@@ -1019,13 +1132,14 @@ int main(){
 
     click = LoadSound("click.mp3");
     beep  = LoadSound("beep.mp3");
-    SetSoundVolume(beep, 0.1f);
-
+    SetSoundVolume(beep, 0.7f);
+    
+    
     musicaMenu = LoadMusicStream("musicaMenu.mp3");
-    musicaDerrota = LoadMusicStream("derrota.mp3");
+    musicaDerrota = LoadMusicStream("fimJogo.mp3");
     musicaVitoria = LoadMusicStream("musicaVitoria.mp3");
     musicaJogo = LoadMusicStream("musicaJogo.mp3");
-    Texture2D imagemRodape = LoadTexture("imagemRodape.png");
+    SetMusicVolume(musicaVitoria, 0.3f);
 
     SetTargetFPS(60);
 
@@ -1043,25 +1157,24 @@ int main(){
         switch(escolha){
 
             case 0:
-                while(!WindowShouldClose()){
-                    UpdateMusicStream(musicaDerrota);
-                    BeginDrawing();
-                        ClearBackground(BLACK);
-                        DrawText("Arregou! FIM DE JOGO!", 40, 180, 60, MAROON);
-                    EndDrawing();
+                int opcao = menuSairDoJogo();
+                if(opcao == 0){
+                    escolha = 0;    
+                } 
+                else {
+                    escolha = -1;    
                 }
-                break;
-
+                break; 
             case 1:
                 quantidadePlayer = menuMultijogador();
                 menuJogador(jogadores, quantidadePlayer);
                 menuComoJogar(quantidadePlayer);
 
                 if (quantidadePlayer == 1){
-                    jogoSinglePlayer(jogadores, larguraTela, alturaDoMapa, imagemRodape);
+                    jogoSinglePlayer(jogadores, larguraTela, alturaDoMapa);
                 }
                 else{
-                    jogoDualPlayer(jogadores, larguraTela, alturaDoMapa, imagemRodape);
+                    jogoDualPlayer(jogadores, larguraTela, alturaDoMapa);
                 }
 
                 menuDerrota(quantidadePlayer, jogadores);
@@ -1083,6 +1196,5 @@ int main(){
     UnloadMusicStream(musicaDerrota);
     UnloadMusicStream(musicaVitoria);
     UnloadMusicStream(musicaJogo);  
-
     CloseAudioDevice();
 }

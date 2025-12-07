@@ -1,11 +1,11 @@
 RANK TOP 10 DO DEU A LOUCA NO QUADRADO!
-eric 2150
+Raphael 100000000
 eric 2000
 felix 1350
+bruno 1350
 eric 1300
-maria 200
-joca 150
- 0
- 0
- 0
- 0
+eric 1250
+eric 600
+eric 500
+eric 400
+eric 200
