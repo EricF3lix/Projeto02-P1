@@ -33,11 +33,11 @@ void inicializaVetor(Usuario vetor[], int tamanho);
 float controleContadoraPlayer1(float contadora1);
 float controleContadoraPlayer2(float contadora2);
 void atualizarTelaFaseDeJogo1Dual(float larguraTotal, float alturaDoMapa, float tempo); 
-void atualizarTelaFaseDeJogo2Dual(float larguraTotal, float alturaDoMapa, float contadoraPlayer1, float contadoraPlayer2, int tamanho, int *posicoes, Color *cores); 
+void atualizarTelaFaseDeJogo2Dual(float larguraTotal, float alturaDoMapa, float contadoraPlayer1, float contadoraPlayer2, int tamanho, int *posicoes, Color *cores, int contaRodada); 
 int *sortearPosEQtd(int tamanho);
-void pintarQuadrados(float larguraTotal, float alturaDoMapa, int pos, Color cor);
+void pintarQuadrados(float larguraTotal, float alturaDoMapa, int pos, Color cor, int contaRodada);
 void jogoSinglePlayer(Usuario jogadores[], float larguraTotal, float alturaDoMapa); 
-void desenharQuadradosDaRodada(float larguraTotal, float alturaDoMapa, int tamanho, int *posicoes, Color coresSorteadas[]);
+void desenharQuadradosDaRodada(float larguraTotal, float alturaDoMapa, int tamanho, int *posicoes, Color coresSorteadas[], int contaRodada);
 
 
 
@@ -83,6 +83,7 @@ void desenhaPlacar(Usuario rank[]){
         EndDrawing();
 
         if (voltar && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
+            PlaySound(beep);
             parar = 0;
         }
     }
@@ -220,11 +221,11 @@ int menuSairDoJogo() {
 
 
 
-void mostraAcerto(int quantidadePlayer,int contadoraPlayer1,int contadoraPlayer2,int tamanho,Usuario jogadores[], float larguraTotal,float alturaDoMapa,int *posicoes,Color coresSorteadas[], int rodadaAtual) {
+void mostraAcerto(int quantidadePlayer,int contadoraPlayer1,int contadoraPlayer2,int tamanho,Usuario jogadores[], float larguraTotal,float alturaDoMapa,int *posicoes,Color coresSorteadas[], int rodadaAtual, int contaRodada) {
     float tempo = 0;
     char texto[200];
     Texture2D imagemFundo = LoadTexture("imagemfundo.png");
-    while (tempo < 5 && !WindowShouldClose()) {
+    while (tempo < 3 && !WindowShouldClose()) {
 
         UpdateMusicStream(musicaJogo);
         tempo += GetFrameTime();
@@ -233,7 +234,7 @@ void mostraAcerto(int quantidadePlayer,int contadoraPlayer1,int contadoraPlayer2
             DrawTexture(imagemFundo, 0, 0, WHITE);  
 
         
-            desenharQuadradosDaRodada(larguraTotal, alturaDoMapa, tamanho, posicoes, coresSorteadas);
+            desenharQuadradosDaRodada(larguraTotal, alturaDoMapa, tamanho, posicoes, coresSorteadas, contaRodada);
 
             
             DrawRectangle(0, alturaDoMapa, larguraTotal, 300, BLACK);
@@ -560,12 +561,12 @@ int menu() {
         "Deu a Louca no Quadrado!",
         "Escolha uma das opções abaixo:"
     };
-
+    int opcao = -1;
     Rectangle botaoJogar  = { 570, 500, 300, 70 };
     Rectangle botaoPlacar = { 570, 600, 300, 70 };
     Rectangle botaoSair   = { 570, 700, 300, 70 };
     Texture2D imagemFundo = LoadTexture("imagemfundo.png");
-    while (!WindowShouldClose()) {
+    while (opcao == -1 && !WindowShouldClose()) {
         UpdateMusicStream(musicaMenu);   
 
         Vector2 mouse = GetMousePosition();
@@ -594,25 +595,28 @@ int menu() {
 
         if (jogar && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){ 
             PlaySound(beep);
-            UnloadTexture(imagemFundo);
-            return 1;
+            opcao = 1;
+            
+          
             
         }
         if (placar && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
             PlaySound(beep);
-            UnloadTexture(imagemFundo);
-            return 2;
+            opcao = 2;
+            
+            
             
         }
         if (sair && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             PlaySound(beep);
-            UnloadTexture(imagemFundo);            
-            return 0;
+            opcao = 0;
+                   
+           
             
         }
-    }
-    
-    
+    } 
+    UnloadTexture(imagemFundo);
+    return opcao;
 }
 
 
@@ -712,7 +716,7 @@ void atualizarTelaFaseDeJogo1Dual(float larguraTotal, float alturaDoMapa, float 
 }
 
 
-void atualizarTelaFaseDeJogo2Dual(float larguraTotal, float alturaDoMapa, float contadoraPlayer1, float contadoraPlayer2, int tamanho, int *posicoes, Color *cores){
+void atualizarTelaFaseDeJogo2Dual(float larguraTotal, float alturaDoMapa, float contadoraPlayer1, float contadoraPlayer2, int tamanho, int *posicoes, Color *cores, int contaRodada){
     UpdateMusicStream(musicaJogo);
 
     char contadora1Printavel[4];
@@ -725,7 +729,7 @@ void atualizarTelaFaseDeJogo2Dual(float larguraTotal, float alturaDoMapa, float 
 
         if(tamanho > 0 && posicoes != NULL && cores != NULL){
             for (int i = 0; i < tamanho; i++){
-                pintarQuadrados(larguraTotal, alturaDoMapa, posicoes[i], cores[i]);
+                pintarQuadrados(larguraTotal, alturaDoMapa, posicoes[i], cores[i], contaRodada);
             }
         }
 
@@ -772,14 +776,25 @@ int *sortearPosEQtd(int tamanho){
 
 
 
-void pintarQuadrados(float larguraTotal, float alturaDoMapa, int pos, Color coresSorteadas){
+void pintarQuadrados(float larguraTotal, float alturaDoMapa, int pos, Color coresSorteadas, int contaRodada){
     float largura = larguraTotal / 5;
     float altura = alturaDoMapa / 5;
     int linha = pos / 5;
     int coluna = pos % 5;
-    Rectangle retangulo = {coluna * largura, linha * altura, largura, altura, coresSorteadas};
-    DrawRectangle(coluna * largura, linha * altura, largura, altura, coresSorteadas);
-    DrawRectangleLinesEx(retangulo, 2, DARKGRAY);
+    
+    
+    if (contaRodada < 10){
+        Rectangle retangulo = {coluna * largura, linha * altura, largura, altura};
+        DrawRectangle(coluna * largura, linha * altura, largura, altura, coresSorteadas);
+        DrawRectangleLinesEx(retangulo, 2, DARKGRAY);
+    }
+    else{
+        Rectangle retangulo = {coluna * largura, linha * altura, largura+12, altura+12};
+        DrawRectangle(coluna * largura, linha * altura, largura+12, altura+12, coresSorteadas);
+        DrawRectangleLinesEx(retangulo, 2, DARKGRAY);
+        
+    }
+    
 }
 
 
@@ -802,7 +817,7 @@ void atualizarTelaFaseDeJogo1Singal(float larguraTotal, float alturaDoMapa, floa
 }
 
 
-void atualizarTelaFaseDeJogo2Singal(float larguraTotal, float alturaDoMapa, float contadoraPlayer1, float contadoraPlayer2, int tamanho, int *posicoes, Color coresSorteadas[]){
+void atualizarTelaFaseDeJogo2Singal(float larguraTotal, float alturaDoMapa, float contadoraPlayer1, float contadoraPlayer2, int tamanho, int *posicoes, Color coresSorteadas[], int contaRodada){
     UpdateMusicStream(musicaJogo);
 
     BeginDrawing();
@@ -810,7 +825,7 @@ void atualizarTelaFaseDeJogo2Singal(float larguraTotal, float alturaDoMapa, floa
         DrawRectangle(0,0,larguraTotal,alturaDoMapa,WHITE);
 
         for (int i = 0; i < tamanho; i++){
-            pintarQuadrados(larguraTotal,alturaDoMapa,posicoes[i],coresSorteadas[i]);
+            pintarQuadrados(larguraTotal,alturaDoMapa,posicoes[i],coresSorteadas[i], contaRodada);
         }
 
         char contadora1Printavel[4];
@@ -823,12 +838,12 @@ void atualizarTelaFaseDeJogo2Singal(float larguraTotal, float alturaDoMapa, floa
 }
 
 
-void desenharQuadradosDaRodada(float larguraTotal, float alturaDoMapa, int tamanho, int *posicoes, Color coresSorteadas[]) {
+void desenharQuadradosDaRodada(float larguraTotal, float alturaDoMapa, int tamanho, int *posicoes, Color coresSorteadas[], int contaRodada) {
     
     DrawRectangle(0, 0, larguraTotal, alturaDoMapa, WHITE);
 
     for (int i = 0; i < tamanho; i++) {
-        pintarQuadrados(larguraTotal, alturaDoMapa, posicoes[i], coresSorteadas[i]);
+        pintarQuadrados(larguraTotal, alturaDoMapa, posicoes[i], coresSorteadas[i], contaRodada);
     }
 }
 
@@ -907,11 +922,11 @@ void jogoSinglePlayer(Usuario jogadores[], float larguraTotal, float alturaDoMap
             tempo+= GetFrameTime();
 
             if (tempo <  tempoDoJogo){
-                atualizarTelaFaseDeJogo2Singal(larguraTotal, alturaDoMapa, contadoraPlayer1, 0, tamanho, posicoes, coresSorteadas);
+                atualizarTelaFaseDeJogo2Singal(larguraTotal, alturaDoMapa, contadoraPlayer1, 0, tamanho, posicoes, coresSorteadas, contaRodada);
             } 
             else {
 
-                atualizarTelaFaseDeJogo2Singal(larguraTotal, alturaDoMapa, contadoraPlayer1, 0, 0, NULL, NULL);
+                atualizarTelaFaseDeJogo2Singal(larguraTotal, alturaDoMapa, contadoraPlayer1, 0, 0, NULL, NULL, 0);
 
                 if (IsKeyPressed(KEY_F)){
 
@@ -931,7 +946,7 @@ void jogoSinglePlayer(Usuario jogadores[], float larguraTotal, float alturaDoMap
                     tempo = 0;
                     turnoDeJogo = 1;
                     
-                    mostraAcerto(1,contadoraPlayer1,0,tamanho,jogadores, larguraTotal,alturaDoMapa,posicoes,coresSorteadas, contaRodada+1);
+                    mostraAcerto(1,contadoraPlayer1,0,tamanho,jogadores, larguraTotal,alturaDoMapa,posicoes,coresSorteadas, contaRodada+1, contaRodada);
 
                     contaRodada++;
 
@@ -1034,11 +1049,11 @@ void jogoDualPlayer(Usuario jogadores[], float larguraTotal, float alturaDoMapa)
             tempo += GetFrameTime();
 
             if (tempo < tempoDoJogo){
-                atualizarTelaFaseDeJogo2Dual(larguraTotal, alturaDoMapa, contadoraPlayer1, contadoraPlayer2, tamanho, posicoes, coresSorteadas);
+                atualizarTelaFaseDeJogo2Dual(larguraTotal, alturaDoMapa, contadoraPlayer1, contadoraPlayer2, tamanho, posicoes, coresSorteadas, contaRodada);
             }
             else {
 
-                atualizarTelaFaseDeJogo2Dual(larguraTotal, alturaDoMapa, contadoraPlayer1, contadoraPlayer2, 0, NULL, NULL);
+                atualizarTelaFaseDeJogo2Dual(larguraTotal, alturaDoMapa, contadoraPlayer1, contadoraPlayer2, 0, NULL, NULL, 0);
 
                 if (IsKeyPressed(KEY_F) && podeJogar1){
                     int dif1 = (int)(contadoraPlayer1 + 0.5) - tamanho;
@@ -1082,7 +1097,7 @@ void jogoDualPlayer(Usuario jogadores[], float larguraTotal, float alturaDoMapa)
                     podeJogar1 = true;
                     podeJogar2 = true;
                     
-                    mostraAcerto(2,contadoraPlayer1,contadoraPlayer2 ,tamanho,jogadores, larguraTotal,alturaDoMapa,posicoes,coresSorteadas, contaRodada+1);
+                    mostraAcerto(2,contadoraPlayer1,contadoraPlayer2 ,tamanho,jogadores, larguraTotal,alturaDoMapa,posicoes,coresSorteadas, contaRodada+1, contaRodada);
 
                     contaRodada++;
                     

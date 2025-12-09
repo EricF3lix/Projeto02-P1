@@ -5,7 +5,7 @@ felix 1350
 bruno 1350
 eric 1300
 eric 1250
+eric 1250
+eric  1000
 eric 600
 eric 500
-eric 400
-eric 200
