@@ -1119,16 +1119,16 @@ void jogoDualPlayer(Usuario jogadores[], float larguraTotal, float alturaDoMapa)
 
                     podeJogar2 = false;
                 }
-
+                
                 if (!podeJogar1 && !podeJogar2){
 
-
+                    mostraAcerto(2,contadoraPlayer1,contadoraPlayer2 ,tamanho,jogadores, larguraTotal,alturaDoMapa,posicoes,coresSorteadas, contaRodada+1, contaRodada);
                     tempo = 0;
                     turnoDeJogo = 1;
                     podeJogar1 = true;
                     podeJogar2 = true;
 
-                    mostraAcerto(2,contadoraPlayer1,contadoraPlayer2 ,tamanho,jogadores, larguraTotal,alturaDoMapa,posicoes,coresSorteadas, contaRodada+1, contaRodada);
+                    
 
                     contaRodada++;
 
